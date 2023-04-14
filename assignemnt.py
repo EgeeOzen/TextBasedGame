@@ -6,9 +6,11 @@ main_window = tkinter.Tk()
 main_window.title("Text-based adventure game")
 main_window.geometry("400x400")
 name = input("Enter your name please >>>")
-money = random.randint(50,310)
+money = 500
+# random.randint(50,310)
 point = 0
-health = 100
+health = 1000000
+
 inventory=[]
 
 
@@ -60,7 +62,66 @@ def change_labels(health, money, point):
     health_label.configure(text="Health: "+str(health))     
     money_label.configure(text="Money: "+str(money))
     point_label.configure(text="Point: "+str(point))
+    
+    
+def change_health(file_name,new_health):
+    my_file = open(file_name+".txt","r")
+    whole_text = my_file.readlines()
+    for idx, item in enumerate(whole_text):
+        if "enemy" in item.lower():
+            temp = whole_text[idx+1].strip().split(",")
+            temp[2] = str(new_health)
+            whole_text[idx+1] = ",".join(temp)+"\n"
+            break
+    my_file.close()
+         
+    my_file = open(file_name+".txt","w")
+    for item in whole_text:
+        my_file.write(item)
+    my_file.close()
 
+
+
+# def scan_room(file_name):
+#     global inventory
+#     my_file = open(file_name+".txt","r")
+#     whole_text = my_file.readlines()
+#     print(whole_text[0].strip())
+#     print(whole_text[1].strip())
+    
+#     for idx, item in enumerate(whole_text):
+#         if "enemy" in item.lower():
+#             enemy = whole_text[idx+1].strip().split(",")
+#             break
+        
+#     print("\nThe name of the enemy: ",enemy[0])
+#     print("The damage of the enemy ",enemy[1])
+#     print("The health of the enemy: ",enemy[2],"\n")
+    
+#     print("The weapons in your inventory:")
+#     for item in inventory["Weapons"]:
+#         print(item)
+        
+#     weapon_choice = int(input("Which weapon do you want to use against the enemy? "))
+#     your_weapon = inventory["Weapons"][weapon_choice-1]
+    
+#     print("The Armours in your inventory: ")
+#     for item in inventory["Armours"]:
+#         print(item)
+#     armour_choice = int(input("Which Armour do you want to use against the enemy?"))
+#     your_armour = inventory["Armours"][armour_choice-1]
+    
+#     print("---------------------------------------------")
+#     print(enemy)
+#     print(your_weapon)
+#     print(your_armour)
+    
+#     while health >0 or int(enemy[2]>0):
+#         enemy[2] -= your_weapon["damage"]
+#         health -= int(enemy[1])
+        
+#     if health < 0:
+#         print("You Lost :( ")
 # temp = int(input("Do you want to change points to 5?(yes-1 / no-0)"))
 # if temp == 1:
 #     point = 5
@@ -71,117 +132,363 @@ bottom_frame.pack(anchor="s")
 
 
 def Room1():
-    global money, point, health
-    with open('Room1.txt', 'r') as file:
-        line_num = 1
-        for line in file:
-            print(line)
-            line_num += 1
-            if line_num > 2:
-                break
-        # print(enemy1) 
-        with open('Room1.txt', 'r') as f:
-            text_lines = f.readlines()
-            enemy_line = text_lines[4].strip()
-            name, damage, enemyhealth = enemy_line.split(',')
-            enemy1 = {'name':(name), 'damage': int(damage), 'health': int(enemyhealth)}          
-            print("Enemy Name->",enemy1['name'], "Enemy Damage->",enemy1['damage'], "Enemy Health->",enemy1['health'])
-       
-       
-        weapon = input("Choose a weapon from your inventory: ")
-        armor_choice = input("Do you want to use your armor? (yes/no): ")
-
-
-
-
-        health -= enemy1['damage']
-        print("Your Health:", health)
-        if health <= 0:
-            print("You Died.")
+    with open('Room1.txt', 'r') as f:
+        if len(f.read()) < 5:
+            print("You Have Been In This Room, Please Choose Other One")
         else:
-            money -= 10
-            point = 5
-            change_labels(health, money, point)
-
-        pass
+            with open('Room1.txt', 'r') as f:
+                global money, point, health, inventory
+                text_lines = f.readlines()
+                print(text_lines[0].strip())
+                print(text_lines[1].strip())
+                enemy_line = text_lines[4].strip()
+                name, damage, enemyhealth = enemy_line.split(',')
+                enemy1 = {'name':(name), 'damage': int(damage), 'health': int(enemyhealth)}          
+                print("Enemy Name->",enemy1['name'], "Enemy Damage->",enemy1['damage'], "Enemy Health->",enemy1['health'])
+            
+                print(inventory)
+                a = int(input("Please Choose a weapon from your inventory: "))
+                wepon = inventory[a]
+                
+                armor_choice = int(input("If you want to use armour please select it, if you don't want, type 9 -->"))
+                if armor_choice != 9 :
+                    wepon = inventory[armor_choice]
+                    enemy1["damage"]=int(enemy1["damage"])/int(wepon["property"])
+                    print(enemy1["damage"])
+                else:
+                    pass
+                        
+                while health > 0 or int(enemy1['health']) > 0 :
+                    enemy1['health'] -= wepon["property"]
+                    health -= enemy1["damage"]            
+                    
+                    if health <= 0 :
+                        print("You Lost The Battle")
+                        point -= 2
+                        health = (0)
+                        inventory[:]=[]
+                        newhealthenemy = (enemy1["health"])
+                        change_health("Room1", newhealthenemy)
+                                                    
+                    elif enemy1["health"] <= 0:
+                        print("Congrats You Win")
+                        money += 250
+                        point += 5
+                        with open('Room1.txt', 'r') as f:
+                            map_lines = f.readlines()
+                            weapon_line = map_lines[10].strip()
+                            name, damage, price = weapon_line.strip().split(',')
+                            weapon1 = {'name':str(name),'damage': int(damage), 'price': int(price)}
+                            inventory.append(weapon1)
+                            print(inventory)
+                            
+                            chest=input("You Win in this Room, Do You Want to Open The Treassure Chest?  yes/no--->")
+                            if chest == "yes":
+                                chestline = map_lines[16].strip()
+                                code,chestpoint = chestline.strip().split(',')
+                                chest1 = {'code':int(code),'point':int(chestpoint)}
+                                keyselect=int(input("Please Select The Key From Your Inventory-->"))
+                                keyeee=inventory[keyselect]
+                                if keyeee["property"] == chest1["code"]:
+                                    point += chest1["point"]
+                                else:
+                                    print("This Key Belongs to Another Chest, Please Use the Correct Key")
+                                    pass
+                            else:
+                                pass
+                            
+                            with open("Room1.txt","w") as f:
+                                f.truncate(0)
+                                
+                    else:         
+                        continue
+                    break
+                change_labels(health, money, point)        
+                if point < 0:
+                    print("YOU LOST THE GAME")
+                elif point >= 10:
+                    print("YOU WIN THE GAME")
+                
+                
+                
+            pass
 
 def Room2():
-    myfile = open("Room2.txt",'r')
-    print(myfile.readline())
-    print("Hello You are in Room2")
-    point = 10
-    change_labels(health, money, point)
-    pass
-def Room3():
-    myfile = open("Room3.txt",'r')
-    print(myfile.readline())
-    print("Hello You are in Room3")
-    point = 10
-    change_labels(health, money, point)
-    pass
-def Room4():
-    myfile = open("Room4.txt",'r')
-    print(myfile.readline())
-    print("Hello You are in Room4")
-    point = 10
-    change_labels(health, money, point)
-    pass
+    with open('Room2.txt', 'r') as f:
+        if len(f.read()) < 5:
+            print("You Have Been In This Room, Please Choose Other One")
+            with open('Room2.txt', 'r') as f:
+                global money, point, health, inventory
+                text_lines = f.readlines()
+                print(text_lines[0].strip())
+                print(text_lines[1].strip())
+                enemy_line = text_lines[4].strip()
+                name, damage, enemyhealth = enemy_line.split(',')
+                enemy2 = {'name':(name), 'damage': int(damage), 'health': int(enemyhealth)}          
+                print("Enemy Name->",enemy2['name'], "Enemy Damage->",enemy2['damage'], "Enemy Health->",enemy2['health'])
+                
+                print(inventory)
+                a=int(input("Please Choose a weapon from your inventory: "))
+                wepon = inventory[a]
+                
+                armor_choice = int(input("If you want to use armour please select it, if you don't want, type 9 -->"))
+                if armor_choice != 9 :
+                    wepon = inventory[armor_choice]
+                    enemy2["damage"]=int(enemy2["damage"])/int(wepon["property"])
+                    print(enemy2["damage"])
+                else:
+                    pass
+                while health > 0 or int(enemy2['health']) > 0 :
+                    enemy2['health'] -= wepon["property"]
+                    health -= enemy2["damage"]            
+                    
+                    if health <= 0 :
+                        print("You Lost The Battle")
+                        point -= 2
+                        health = (0)
+                        inventory[:]=[]
+                        newhealthenemy = (enemy2["health"])
+                        change_health("Room2", newhealthenemy)
+                        
+                    elif enemy2["health"] <= 0:
+                        print("Congrats You Win")
+                        money += 50
+                        point += 2
+                        with open('Room2.txt', 'r') as f:
+                            map_lines = f.readlines()
+                            weapon2_line = map_lines[10].strip()
+                            name, damage, price = weapon2_line.strip().split(',')
+                            weapon2= {'name':str(name),'damage': int(damage), 'price': int(price)}
+                            inventory.append(weapon2)
+                            print(inventory)
+                            chest=input("You Win in this Room, Do You Want to Open The Treassure Chest?  yes/no--->")
+                            if chest == "yes":
+                                chestline = map_lines[16].strip()
+                                code,chestpoint = chestline.strip().split(',')
+                                chest2 = {'code':int(code),'point':int(chestpoint)}
+                                keyselect=int(input("Please Select The Key From Your Inventory-->"))
+                                keyeee=inventory[keyselect]
+                                if keyeee["property"] == chest2["code"]:
+                                    point += chest2["point"]
+                                else:
+                                    print("This Key Belongs to Another Chest, Please Use the Correct Key")
+                                    pass
+                            else:
+                                pass 
+                            with open("Room2.txt","w") as f:
+                                f.truncate(0)  
+                    else:
+                        continue
+                    break
+                change_labels(health, money, point)        
+                if point < 0:
+                    print("YOU LOST THE GAME")
+                elif point >= 10:
+                    print("YOU WIN THE GAME")
+                
+                
+            pass                
 
+def Room3():
+    with open('Room3.txt', 'r') as f:
+        if len(f.read()) < 5:
+            print("You Have Been In This Room, Please Choose Other One")
+            with open('Room3.txt', 'r') as f:
+                global money, point, health, inventory
+                text_lines = f.readlines()
+                print(text_lines[0].strip())
+                print(text_lines[1].strip())
+                enemy_line = text_lines[4].strip()
+                name, damage, enemyhealth = enemy_line.split(',')
+                enemy3 = {'name':(name), 'damage': int(damage), 'health': int(enemyhealth)}          
+                print("Enemy Name->",enemy3['name'], "Enemy Damage->",enemy3['damage'], "Enemy Health->",enemy3['health'])
+            
+                print(inventory)
+                a=int(input("Please Choose a weapon from your inventory: "))
+                wepon = inventory[a]
+                
+                armor_choice = int(input("If you want to use armour please select it, if you don't want, type 9 -->"))
+                if armor_choice != 9 :
+                    wepon = inventory[armor_choice]
+                    enemy3["damage"]=int(enemy3["damage"])/int(wepon["property"])
+                    print(enemy3["damage"])
+                else:
+                    pass
+                        
+                while health > 0 or int(enemy3['health']) > 0 :
+                    enemy3['health'] -= wepon["property"]
+                    health -= enemy3["damage"]            
+                    
+                    if health <= 0 :
+                        print("You Lost The Battle")
+                        point -= 2
+                        health = (0)
+                        inventory[:]=[]
+                        newhealthenemy = (enemy3["health"])
+                        change_health("Room3", newhealthenemy)
+                        
+                    elif enemy3["health"] <= 0:
+                        print("Congrats You Win")
+                        money += 100
+                        point += 3
+                        with open('Room3.txt', 'r') as f:
+                            map_lines = f.readlines()
+                            weapon3_line = map_lines[10].strip()
+                            name, damage, price = weapon3_line.strip().split(',')
+                            weapon3 = {'name':str(name),'damage': int(damage), 'price': int(price)}
+                            inventory.append(weapon3)
+                            print(inventory)
+                            
+                            healthpadline = map_lines[16].strip()
+                            name,health,price = healthpadline.strip().split(',')
+                            healthpad = {'name':str(name),'health': int(health), 'price': int(price)}
+                            abc=input("YOU FOUND A HEALTHPAD, Do you want to use it or store it? use/store--->")
+                            if abc == "use":
+                                health += healthpad["health"]
+                            elif abc == "store":
+                                inventory.append(healthpad)
+                            else:
+                                pass
+                            with open("Room3.txt","w") as f:
+                                f.truncate(0)  
+                            
+                    else:
+                        continue
+                    break
+                change_labels(health, money, point)        
+                if point < 0:
+                    print("YOU LOST THE GAME")
+                elif point >= 10:
+                    print("YOU WIN THE GAME")
+                
+                
+                
+            pass
+def Room4():
+    with open('Room3.txt', 'r') as f:
+        if len(f.read()) < 5:
+            print("You Have Been In This Room, Please Choose Other One")
+            with open('Room3.txt', 'r') as f:
+                global money, point, health, inventory
+                text_lines = f.readlines()
+                print(text_lines[0].strip())
+                print(text_lines[1].strip())
+                enemy_line = text_lines[4].strip()
+                name, damage, enemyhealth = enemy_line.split(',')
+                enemy4 = {'name':(name), 'damage': int(damage), 'health': int(enemyhealth)}          
+                print("Enemy Name->",enemy4['name'], "Enemy Damage->",enemy4['damage'], "Enemy Health->",enemy4['health'])
+            
+                print(inventory)
+                a=int(input("Please Choose a weapon from your inventory: "))
+                wepon = inventory[a]
+                
+                armor_choice = int(input("If you want to use armour please select it, if you don't want, type 9 -->"))
+                if armor_choice != 9 :
+                    wepon = inventory[armor_choice]
+                    enemy4["damage"]=int(enemy4["damage"])/int(wepon["property"])
+                    print(enemy4["damage"])
+                else:
+                    pass
+                        
+                while health > 0 or int(enemy4['health']) > 0 :
+                    enemy4['health'] -= wepon["property"]
+                    health -= enemy4["damage"]            
+                    
+                    if health <= 0 :
+                        print("You Lost The Battle")
+                        point -= 2
+                        health = (0)
+                        inventory[:]=[]
+                        newhealthenemy = (enemy4["health"])
+                        change_health("Room4", newhealthenemy)
+                        
+                    elif enemy4["health"] <= 0:
+                        print("Congrats You Win")
+                        money += 100
+                        point += 3
+                        with open('Room4.txt', 'r') as f:
+                            map_lines = f.readlines()
+                            weapon4_line = map_lines[10].strip()
+                            name, damage, price = weapon4_line.strip().split(',')
+                            weapon4 = {'name':str(name),'damage': int(damage), 'price': int(price)}
+                            inventory.append(weapon4)
+                            print(inventory)
+                            
+                            key_line = map_lines[19].strip()
+                            name,code,price = key_line.strip().split(',')
+                            key1 = {'name':(name),'code':int(code),'price':int(price)}
+                            inventory.append(key1)
+                            print(inventory)
+                            
+                            healthpadline = map_lines[16].strip()
+                            name,health,price = healthpadline.strip().split(',')
+                            healthpad = {'name':str(name),'health': int(health), 'price': int(price)}
+                            abc=input("YOU FOUND A HEALTHPAD, Do you want to use it or store it? use/store--->")
+                            if abc == "use":
+                                health += healthpad["health"]
+                            elif abc == "store":
+                                inventory.append(healthpad)
+                            else:
+                                pass
+                            with open("Room2.txt","w") as f:
+                                f.truncate(0)  
+                            
+                    else:
+                        continue
+                    break
+                change_labels(health, money, point)        
+                if point < 0:
+                    print("YOU LOST THE GAME")
+                elif point >= 10:
+                    print("YOU WIN THE GAME")
+
+            pass
 
 def shop():
-    inventory=[]
-    weapon_items = []
-    weapon1 = []
-    with open('Shop.txt', 'r') as f:
-        for line in f:
-            if "#" in line:
-                pass
+    global money,inventory,health
+    buysell= input("Please select Wheter You Want to buy or sell-->")
+    if buysell == "buy":
+        shop_list=[]
+        with open('Shop.txt', 'r') as f:
+            lines = f.readlines()[7:16]  
+            for line in lines:
+                name, property, price = line.strip().split(',')
+                shop1 = {'name':(name), 'property': int(property), 'price': int(price)}
+                print(shop1)
+                shop_list.append(shop1)  # append each item to the shop_list
+
+        
+            choice = int(input("Please Enter the Item you want to Buy 0-8---->"))
+            userschoice = shop_list[choice]
+        
+        if money >= userschoice["price"]:
+            money -= userschoice["price"]
+            if choice == 6:
+                health += 50
+                print("Health Increased by 50")
             else:
-                print(line)
-                boitem = input("Please Enter the Item You Want to Buy--->")
-                with open('Shop.txt', 'r') as f:
-                    map_lines = f.readlines()
-                    for i in range(3, 8):
-                        weapon_items.append(map_lines[i].strip().split(':')[1])
-                    for j in range(len(weapon_items)):
-                        name, damage, price = weapon_items[j].strip().split(',')
-                        weapon1.append({'name': str(name), 'damage': int(damage), 'price': int(price)})
+                inventory.append(userschoice)
+                print("The Item is Added to Your Inventory")
 
-                    for i in range(9, 10):
-                        weapon_items.append(map_lines[i].strip().split(':')[1])
-                    for j in range(len(weapon_items)):
-                        name, code, price = weapon_items[j].strip().split(',')
-                        weapon1.append({'name': str(name), 'code': int(code), 'price': int(price)})
-
-                    for i in range(9, 10):
-                        weapon_items.append(map_lines[i].strip().split(':')[1])
-                    for j in range(len(weapon_items)):
-                        name, code, price = weapon_items[j].strip().split(',')
-                        weapon1.append({'name': str(name), 'code': int(code), 'price': int(price)})
-
-
-                    for i in range(11, 12):
-                        weapon_items.append(map_lines[i].strip().split(':')[1])
-                    for j in range(len(weapon_items)):
-                        name, addhealth, price = weapon_items[j].strip().split(',')
-                        weapon1.append({'name': str(name), 'addhealth': int(addhealth), 'price': int(price)})
-
-
-                    for i in range(13, 15):
-                        weapon_items.append(map_lines[i].strip().split(':')[1])
-                    for j in range(len(weapon_items)):
-                        name, durability, price = weapon_items[j].strip().split(',')
-                        weapon1.append({'name': str(name), 'durability': int(durability), 'price': int(price)})
-
-
-
-
-                for z in weapon1:
-                    if(boitem == z['name']):
-                        print(z)
-                    
-
-                return boitem                 
+        else:
+    
+            print("You dont have enough Money")
+    
+    
+    elif buysell == "sell":
+        print(inventory)
+        solditem = int(input("Please Select The Item You Want to Sell--->"))
+        sellingitem = inventory[solditem]
+        money += sellingitem["price"]
+        del inventory[solditem]
+    
+    
+    
+    change_labels(health, money, point)
+ 
+ 
+ 
+        
 def Inventory():
     print(inventory)
 
