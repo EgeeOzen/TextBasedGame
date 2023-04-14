@@ -6,44 +6,11 @@ main_window = tkinter.Tk()
 main_window.title("Text-based adventure game")
 main_window.geometry("400x400")
 name = input("Enter your name please >>>")
-money = 500
-# random.randint(50,310)
+money = random.randint(50,310)
 point = 0
 health = 1000000
 
 inventory=[]
-
-
-# file = open('Room1.txt')
-# content1 = file.readlines()
-# print(content1)
-
-# with open('Room1.txt', 'r') as file:
-#     line_num = 1
-#     for line in file:
-#         if line_num == 11:
-#             print(line)
-#             break
-#         line_num += 1
-
-# with open('Room1.txt', 'r') as f:
-#     map_lines = f.readlines()
-#     weapon_line = map_lines[10].strip()
-#     weapon_attrs = weapon_line.split(',')
-    
-#     print(weapon_attrs)
-
-# with open('Room1.txt', 'r') as f:
-#     map_lines = f.readlines()
-#     weapon_line = map_lines[10].strip()
-#     name, damage, price = weapon_line.strip().split(',')
-#     weapon1 = {'name':str(name),'damage': int(damage), 'price': int(price)}
-    
-# with open('Room1.txt', 'r') as f:
-#     text_lines = f.readlines()
-#     enemy_line = text_lines[4].strip()
-#     name, damage, health = enemy_line.split(',')
-#     enemy1 = {'name':(name), 'damage': int(damage), 'health': int(health)}
 
 
 top_frame = tkinter.Frame(main_window)
@@ -79,53 +46,6 @@ def change_health(file_name,new_health):
     for item in whole_text:
         my_file.write(item)
     my_file.close()
-
-
-
-# def scan_room(file_name):
-#     global inventory
-#     my_file = open(file_name+".txt","r")
-#     whole_text = my_file.readlines()
-#     print(whole_text[0].strip())
-#     print(whole_text[1].strip())
-    
-#     for idx, item in enumerate(whole_text):
-#         if "enemy" in item.lower():
-#             enemy = whole_text[idx+1].strip().split(",")
-#             break
-        
-#     print("\nThe name of the enemy: ",enemy[0])
-#     print("The damage of the enemy ",enemy[1])
-#     print("The health of the enemy: ",enemy[2],"\n")
-    
-#     print("The weapons in your inventory:")
-#     for item in inventory["Weapons"]:
-#         print(item)
-        
-#     weapon_choice = int(input("Which weapon do you want to use against the enemy? "))
-#     your_weapon = inventory["Weapons"][weapon_choice-1]
-    
-#     print("The Armours in your inventory: ")
-#     for item in inventory["Armours"]:
-#         print(item)
-#     armour_choice = int(input("Which Armour do you want to use against the enemy?"))
-#     your_armour = inventory["Armours"][armour_choice-1]
-    
-#     print("---------------------------------------------")
-#     print(enemy)
-#     print(your_weapon)
-#     print(your_armour)
-    
-#     while health >0 or int(enemy[2]>0):
-#         enemy[2] -= your_weapon["damage"]
-#         health -= int(enemy[1])
-        
-#     if health < 0:
-#         print("You Lost :( ")
-# temp = int(input("Do you want to change points to 5?(yes-1 / no-0)"))
-# if temp == 1:
-#     point = 5
-#     point_label.configure(text = "Point: "+str(point))
 
 bottom_frame = tkinter.Frame(main_window)
 bottom_frame.pack(anchor="s")
@@ -364,6 +284,7 @@ def Room3():
                 
                 
             pass
+        
 def Room4():
     with open('Room3.txt', 'r') as f:
         if len(f.read()) < 5:
@@ -485,10 +406,7 @@ def shop():
     
     
     change_labels(health, money, point)
- 
- 
- 
-        
+      
 def Inventory():
     print(inventory)
 
